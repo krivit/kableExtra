@@ -64,7 +64,8 @@ add_header_above <- function(kable_input, header = NULL,
                              font_size = NULL, angle = NULL,
                              escape = TRUE, line = TRUE, line_sep = 3,
                              extra_css = NULL, include_empty = FALSE,
-                             border_left = FALSE, border_right = FALSE) {
+                             border_left = FALSE, border_right = FALSE,
+                             extra_latex_after = NULL) {
   if (is.null(header)) return(kable_input)
 
   kable_format <- attr(kable_input, "format")
@@ -114,7 +115,7 @@ add_header_above <- function(kable_input, header = NULL,
     return(pdfTable_add_header_above(
       kable_input, header, bold, italic, monospace, underline, strikeout,
       align, color, background, font_size, angle, escape, line, line_sep,
-      border_left, border_right))
+      border_left, border_right, extra_latex_after))
   }
 }
 
@@ -292,7 +293,8 @@ pdfTable_add_header_above <- function(kable_input, header, bold, italic,
                                       monospace, underline, strikeout, align,
                                       color, background, font_size, angle,
                                       escape, line, line_sep,
-                                      border_left, border_right) {
+                                      border_left, border_right,
+                                      extra_latex_after) {
   table_info <- magic_mirror(kable_input)
 
   if (is.data.frame(header)){
@@ -322,7 +324,7 @@ pdfTable_add_header_above <- function(kable_input, header, bold, italic,
   new_header_split <- pdfTable_new_header_generator(
     header, table_info$booktabs, bold, italic, monospace, underline, strikeout,
     align, color, background, font_size, angle, line_sep,
-    border_left, border_right)
+    border_left, border_right, extra_latex_after)
   if (line) {
     new_header <- paste0(new_header_split[1], "\n", new_header_split[2])
   } else {
@@ -354,7 +356,8 @@ pdfTable_new_header_generator <- function(header_df, booktabs = FALSE,
                                           bold, italic, monospace,
                                           underline, strikeout, align,
                                           color, background, font_size, angle,
-                                          line_sep, border_left, border_right) {
+                                          line_sep, border_left, border_right,
+                                          extra_latex_after) {
   n <- nrow(header_df)
   bold <- ez_rep(bold, n)
   italic <- ez_rep(italic, n)
@@ -404,7 +407,8 @@ pdfTable_new_header_generator <- function(header_df, booktabs = FALSE,
     '\\\\multicolumn\\{', colspan, '\\}\\{', align, '\\}\\{', header, '\\}'
   )
 
-  header_text <- paste(paste(header_items, collapse = " & "), "\\\\\\\\")
+  header_text <- paste0(paste(header_items, collapse = " & "), "\\\\\\\\",
+                       regex_escape(extra_latex_after, double_backslash = TRUE))
   cline <- cline_gen(header_df, booktabs, line_sep)
   return(c(header_text, cline))
 }
